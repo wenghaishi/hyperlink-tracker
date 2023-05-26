@@ -1,0 +1,11 @@
+{
+  "name": "Hyperlink Tracker",
+  "version": "1.0.0",
+  "description": "this is an extension to tract hyperlinks",
+  "manifest_version": 3,
+  "author": "Weng Haishi",
+  "action": {
+      "default_popup": "index.html",
+      "default_title": "Hyperlink Tracker"
+  }
+}
