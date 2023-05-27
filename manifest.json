@@ -1,11 +1,21 @@
 {
-  "name": "Hyperlink Tracker",
-  "version": "1.0.0",
-  "description": "this is an extension to tract hyperlinks",
   "manifest_version": 3,
-  "author": "Weng Haishi",
+  "name": "Hyperlink Tracker",
+  "version": "1.0",
+  "permissions": [
+    "tabs",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"]
+    }
+  ],
   "action": {
-      "default_popup": "index.html",
-      "default_title": "Hyperlink Tracker"
+    "default_popup": "popup.html"
   }
 }
