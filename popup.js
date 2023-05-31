@@ -10,8 +10,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 function updatePopupHyperlinks(hyperlinks) {
   const hyperlinksTableBody = document.getElementById("hyperlinks-table-body");
   hyperlinks = hyperlinks.filter((element) => element.trim() !== "");
-  // Clear any existing rows
-  console.log(hyperlinks);
 
   // Count the occurrences of each hyperlink
   const occurrenceMap = hyperlinks.reduce((map, hyperlink) => {
@@ -19,21 +17,59 @@ function updatePopupHyperlinks(hyperlinks) {
     return map;
   }, new Map());
 
-  // Iterate over the hyperlinks data and create rows for each entry
-  occurrenceMap.forEach((occurrences, hyperlink) => {
-    const row = document.createElement('tr');
-    const hyperlinkCell = document.createElement('td');
-    const occurrencesCell = document.createElement('td');
+  // Function to log the hyperlink
+  function logHyperlink(url) {
+    fetch("http://localhost:5000/log_hyperlink", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: url }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.message); // Log the response message
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 
-    hyperlinkCell.textContent = hyperlink;
-    occurrencesCell.textContent = occurrences;
+  // Example usage: call logHyperlink() when a hyperlink is encountered
+  logHyperlink(hyperlinks);
 
-    row.appendChild(hyperlinkCell);
-    row.appendChild(occurrencesCell);
-    hyperlinksTableBody.appendChild(row);
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    const currentURL = tabs[0].url;
+    const hasCurrentURL = new Map();
+
+    occurrenceMap.forEach((occurrences, hyperlink) => {
+      const row = document.createElement("tr");
+      const currentUrlCell = document.createElement("td");
+      const hyperlinkCell = document.createElement("td");
+      const occurrencesCell = document.createElement("td");
+
+      if (!hasCurrentURL.get(hyperlink)) {
+        currentUrlCell.textContent = currentURL;
+        row.appendChild(currentUrlCell);
+        hasCurrentURL.set(hyperlink, true);
+      }
+
+      hyperlinkCell.textContent = hyperlink;
+      occurrencesCell.textContent = occurrences;
+
+      row.appendChild(hyperlinkCell);
+      row.appendChild(occurrencesCell);
+      hyperlinksTableBody.appendChild(row);
+    });
   });
 
-  // Update the hyperlink count
-  // const hyperlinkCount = document.getElementById('hyperlink-count');
-  // hyperlinkCount.textContent = hyperlinks.length.toString();
+  // connect to native messaging port
+  var port = chrome.runtime.connectNative("com.link-tracker");
+  port.onMessage.addListener(function (msg) {
+    console.log("Received" + msg);
+  });
+  port.onDisconnect.addListener(function () {
+    console.log("Disconnected");
+  });
+  port.postMessage({ text: "Hello, my_application" });
 }

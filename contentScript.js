@@ -1,4 +1,4 @@
-// This script runs in the context of web pages
+// // This script runs in the context of web pages
 
 function findHyperlinks() {
   const hyperlinks = Array.from(document.querySelectorAll('a')).map(a => a.href);
